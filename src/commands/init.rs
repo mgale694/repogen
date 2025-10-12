@@ -368,8 +368,3 @@ impl InitHandler {
         println!("🚀 Try running: repogen new my-awesome-project");
     }
 }
-
-/// Public function to handle initialization - entry point from main
-pub fn handle_init() {
-    InitHandler::handle_init();
-}

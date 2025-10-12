@@ -4,6 +4,8 @@ mod cli;
 mod commands;
 mod utils;
 
+use commands::InitHandler;
+
 fn main() {
     let args = cli::Cli::parse();
 
@@ -21,7 +23,7 @@ fn main() {
                 // commands::handle_meta_only();
                 println!("Metadata only setup is not yet implemented.");
             } else {
-                commands::handle_init();
+                InitHandler::handle_init();
             }
         }
         cli::Commands::New(new) => {
