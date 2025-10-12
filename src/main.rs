@@ -30,5 +30,11 @@ fn main() {
                 new.name, new.description, new.private
             );
         }
+        cli::Commands::Config(config) => {
+            println!(
+                "Config commands invoked: {:?}, {:?}, {:?}",
+                config.view, config.edit, config.clear
+            );
+        }
     }
 }

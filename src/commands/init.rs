@@ -4,257 +4,372 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::thread;
 use std::time::Duration;
 
-pub fn handle_init() {
-    println!("Welcome to repogen! 🚀");
-    println!("Let's set up your profile, preferences, and GitHub connection.\n");
+/// Handles the initialization workflow for repogen
+pub struct InitHandler {
+    config: Config,
+    theme: ColorfulTheme,
+}
 
-    // Load existing config
-    let mut config = Config::load().unwrap_or_else(|e| {
-        eprintln!("Warning: Could not load config: {}", e);
-        Config::default()
-    });
+/// User profile information collected during init
+#[derive(Debug)]
+struct UserProfile {
+    github_username: String,
+    full_name: Option<String>,
+    email: Option<String>,
+}
 
-    // Check if user has existing config
-    let has_existing_config = config.github_username.is_some()
-        || config.user_name.is_some()
-        || config.github_token.is_some();
+/// User preferences for repository defaults
+#[derive(Debug)]
+struct UserPreferences {
+    default_private: bool,
+    license: Option<String>,
+    gitignore_template: Option<String>,
+    preferred_editor: Option<String>,
+}
 
-    if has_existing_config {
-        println!(
-            "💡 Found existing configuration. Press Enter to keep current values, or type new ones."
-        );
-    }
+/// Authentication method chosen by user
+#[derive(Debug)]
+enum AuthMethod {
+    PersonalAccessToken,
+    OAuth,
+}
 
-    // Step 1: User Profile
-    println!("\n👤 Step 1: User Profile");
+impl InitHandler {
+    /// Create a new InitHandler instance
+    pub fn new() -> Self {
+        let config = Config::load().unwrap_or_else(|e| {
+            eprintln!("Warning: Could not load config: {}", e);
+            Config::default()
+        });
 
-    let github_username = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("GitHub username")
-        .default(config.github_username.clone().unwrap_or_default())
-        .validate_with(|input: &String| -> Result<(), &str> {
-            if input.trim().is_empty() {
-                Err("GitHub username cannot be empty")
-            } else {
-                Ok(())
-            }
-        })
-        .interact_text()
-        .unwrap();
-
-    let user_name: String = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("Your full name (for commits)")
-        .default(config.user_name.clone().unwrap_or_default())
-        .allow_empty(true)
-        .interact_text()
-        .unwrap();
-
-    let user_email: String = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("Your email (optional, for commits)")
-        .default(config.user_email.clone().unwrap_or_default())
-        .allow_empty(true)
-        .interact_text()
-        .unwrap();
-
-    // Step 2: Default Preferences
-    println!("\n⚙️ Step 2: Default Preferences");
-
-    let default_private = Confirm::with_theme(&ColorfulTheme::default())
-        .with_prompt("Make repositories private by default?")
-        .default(config.default_private)
-        .interact()
-        .unwrap();
-
-    let license_options = vec![
-        "None",
-        "MIT",
-        "Apache-2.0",
-        "GPL-3.0",
-        "BSD-3-Clause",
-        "Unlicense",
-    ];
-
-    let current_license_index = if let Some(ref license) = config.default_license {
-        license_options
-            .iter()
-            .position(|&x| x == license)
-            .unwrap_or(0)
-    } else {
-        0
-    };
-
-    let license_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Default license for new repositories")
-        .default(current_license_index)
-        .items(&license_options)
-        .interact()
-        .unwrap();
-
-    let selected_license = if license_selection == 0 {
-        None
-    } else {
-        Some(license_options[license_selection].to_string())
-    };
-
-    let gitignore_templates = vec![
-        "None", "Node", "Python", "Rust", "Go", "Java", "C++", "Swift",
-    ];
-
-    let current_gitignore_index = if let Some(ref gitignore) = config.default_gitignore {
-        gitignore_templates
-            .iter()
-            .position(|&x| x == gitignore)
-            .unwrap_or(0)
-    } else {
-        0
-    };
-
-    let gitignore_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Default .gitignore template")
-        .default(current_gitignore_index)
-        .items(&gitignore_templates)
-        .interact()
-        .unwrap();
-
-    let selected_gitignore = if gitignore_selection == 0 {
-        None
-    } else {
-        Some(gitignore_templates[gitignore_selection].to_string())
-    };
-
-    let editor_options = vec![
-        "None",
-        "VS Code",
-        "Vim",
-        "Emacs",
-        "Sublime Text",
-        "Atom",
-        "IntelliJ",
-    ];
-
-    let current_editor_index = if let Some(ref editor) = config.preferred_editor {
-        editor_options
-            .iter()
-            .position(|&x| x == editor)
-            .unwrap_or(0)
-    } else {
-        0
-    };
-
-    let editor_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Preferred editor (for opening repos)")
-        .default(current_editor_index)
-        .items(&editor_options)
-        .interact()
-        .unwrap();
-
-    let selected_editor = if editor_selection == 0 {
-        None
-    } else {
-        Some(editor_options[editor_selection].to_string())
-    };
-
-    // Step 3: Authentication
-    println!("\n🔐 Step 3: GitHub Authentication");
-
-    if config.github_token.is_some() {
-        let keep_token = Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt("You already have a GitHub token configured. Keep it?")
-            .default(true)
-            .interact()
-            .unwrap();
-
-        if keep_token {
-            println!("✅ Keeping existing GitHub token");
-        } else {
-            config.github_token = None; // Clear the token to get a new one
+        Self {
+            config,
+            theme: ColorfulTheme::default(),
         }
     }
 
-    if config.github_token.is_none() {
-        let selections = &[
+    /// Main entry point for the initialization process
+    pub fn handle_init() {
+        let mut handler = Self::new();
+        handler.run_init_workflow();
+    }
+
+    /// Run the complete initialization workflow
+    fn run_init_workflow(&mut self) {
+        self.display_welcome();
+        self.show_existing_config_notice();
+
+        // Collect user information in steps
+        let user_profile = self.collect_user_profile();
+        let preferences = self.collect_user_preferences();
+        self.handle_authentication();
+
+        // Save all configuration
+        self.save_configuration(user_profile, preferences);
+        self.display_completion_message();
+    }
+
+    /// Display welcome message
+    fn display_welcome(&self) {
+        println!("Welcome to repogen! 🚀");
+        println!("Let's set up your profile, preferences, and GitHub connection.\n");
+    }
+
+    /// Show notice about existing configuration if any
+    fn show_existing_config_notice(&self) {
+        let has_existing_config = self.config.github_username.is_some()
+            || self.config.user_name.is_some()
+            || self.config.github_token.is_some();
+
+        if has_existing_config {
+            println!(
+                "💡 Found existing configuration. Press Enter to keep current values, or type new ones."
+            );
+        }
+    }
+
+    /// Collect user profile information
+    fn collect_user_profile(&self) -> UserProfile {
+        println!("\n👤 Step 1: User Profile");
+
+        let github_username = Input::with_theme(&self.theme)
+            .with_prompt("GitHub username")
+            .default(self.config.github_username.clone().unwrap_or_default())
+            .validate_with(|input: &String| -> Result<(), &str> {
+                if input.trim().is_empty() {
+                    Err("GitHub username cannot be empty")
+                } else {
+                    Ok(())
+                }
+            })
+            .interact_text()
+            .unwrap();
+
+        let full_name = Input::with_theme(&self.theme)
+            .with_prompt("Your full name (for commits)")
+            .default(self.config.user_name.clone().unwrap_or_default())
+            .allow_empty(true)
+            .interact_text()
+            .unwrap();
+
+        let email = Input::with_theme(&self.theme)
+            .with_prompt("Your email (optional, for commits)")
+            .default(self.config.user_email.clone().unwrap_or_default())
+            .allow_empty(true)
+            .interact_text()
+            .unwrap();
+
+        UserProfile {
+            github_username,
+            full_name: if full_name.trim().is_empty() {
+                None
+            } else {
+                Some(full_name)
+            },
+            email: if email.trim().is_empty() {
+                None
+            } else {
+                Some(email)
+            },
+        }
+    }
+
+    /// Collect user preferences for repository defaults
+    fn collect_user_preferences(&self) -> UserPreferences {
+        println!("\n⚙️ Step 2: Default Preferences");
+
+        let default_private = self.ask_privacy_preference();
+        let license = self.select_license();
+        let gitignore_template = self.select_gitignore_template();
+        let preferred_editor = self.select_preferred_editor();
+
+        UserPreferences {
+            default_private,
+            license,
+            gitignore_template,
+            preferred_editor,
+        }
+    }
+
+    /// Ask user about default repository privacy
+    fn ask_privacy_preference(&self) -> bool {
+        Confirm::with_theme(&self.theme)
+            .with_prompt("Make repositories private by default?")
+            .default(self.config.default_private)
+            .interact()
+            .unwrap()
+    }
+
+    /// Let user select default license
+    fn select_license(&self) -> Option<String> {
+        let license_options = vec![
+            "None",
+            "MIT",
+            "Apache-2.0",
+            "GPL-3.0",
+            "BSD-3-Clause",
+            "Unlicense",
+        ];
+
+        let current_index = self.find_option_index(&license_options, &self.config.default_license);
+
+        let selection = Select::with_theme(&self.theme)
+            .with_prompt("Default license for new repositories")
+            .default(current_index)
+            .items(&license_options)
+            .interact()
+            .unwrap();
+
+        if selection == 0 {
+            None
+        } else {
+            Some(license_options[selection].to_string())
+        }
+    }
+
+    /// Let user select default .gitignore template
+    fn select_gitignore_template(&self) -> Option<String> {
+        let gitignore_options = vec![
+            "None", "Node", "Python", "Rust", "Go", "Java", "C++", "Swift",
+        ];
+
+        let current_index =
+            self.find_option_index(&gitignore_options, &self.config.default_gitignore);
+
+        let selection = Select::with_theme(&self.theme)
+            .with_prompt("Default .gitignore template")
+            .default(current_index)
+            .items(&gitignore_options)
+            .interact()
+            .unwrap();
+
+        if selection == 0 {
+            None
+        } else {
+            Some(gitignore_options[selection].to_string())
+        }
+    }
+
+    /// Let user select preferred editor
+    fn select_preferred_editor(&self) -> Option<String> {
+        let editor_options = vec![
+            "None",
+            "VS Code",
+            "Vim",
+            "Emacs",
+            "Sublime Text",
+            "Atom",
+            "IntelliJ",
+        ];
+
+        let current_index = self.find_option_index(&editor_options, &self.config.preferred_editor);
+
+        let selection = Select::with_theme(&self.theme)
+            .with_prompt("Preferred editor (for opening repos)")
+            .default(current_index)
+            .items(&editor_options)
+            .interact()
+            .unwrap();
+
+        if selection == 0 {
+            None
+        } else {
+            Some(editor_options[selection].to_string())
+        }
+    }
+
+    /// Helper method to find the index of current option in a list
+    fn find_option_index(&self, options: &[&str], current_value: &Option<String>) -> usize {
+        if let Some(value) = current_value {
+            options.iter().position(|&x| x == value).unwrap_or(0)
+        } else {
+            0
+        }
+    }
+
+    /// Handle GitHub authentication setup
+    fn handle_authentication(&mut self) {
+        println!("\n🔐 Step 3: GitHub Authentication");
+
+        if self.config.github_token.is_some() {
+            if self.ask_keep_existing_token() {
+                println!("✅ Keeping existing GitHub token");
+                return;
+            } else {
+                self.config.github_token = None;
+            }
+        }
+
+        let auth_method = self.select_auth_method();
+        self.execute_authentication(auth_method);
+    }
+
+    /// Ask if user wants to keep existing token
+    fn ask_keep_existing_token(&self) -> bool {
+        Confirm::with_theme(&self.theme)
+            .with_prompt("You already have a GitHub token configured. Keep it?")
+            .default(true)
+            .interact()
+            .unwrap()
+    }
+
+    /// Let user select authentication method
+    fn select_auth_method(&self) -> AuthMethod {
+        let auth_options = &[
             "GitHub Personal Access Token (PAT)",
             "OAuth Login (Browser)",
         ];
 
-        let selection = Select::with_theme(&ColorfulTheme::default())
+        let selection = Select::with_theme(&self.theme)
             .with_prompt("How would you like to authenticate with GitHub?")
             .default(0)
-            .items(&selections[..])
+            .items(&auth_options[..])
             .interact()
             .unwrap();
 
         match selection {
-            0 => {
-                // PAT method
-                println!("\n📝 Using Personal Access Token authentication");
-
-                let token = Password::with_theme(&ColorfulTheme::default())
-                    .with_prompt("Enter your GitHub Personal Access Token")
-                    .validate_with(|input: &String| -> Result<(), &str> {
-                        if input.starts_with("ghp_") && input.len() > 10 {
-                            Ok(())
-                        } else {
-                            Err("Please enter a valid GitHub token (should start with 'ghp_')")
-                        }
-                    })
-                    .interact()
-                    .unwrap();
-
-                println!("✅ Token received and validated!");
-                config.set_github_token(token);
-            }
-            1 => {
-                // OAuth method
-                println!("\n🌐 Using OAuth browser authentication");
-
-                let pb = ProgressBar::new_spinner();
-                pb.set_style(
-                    ProgressStyle::default_spinner()
-                        .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
-                        .template("{spinner:.blue} {msg}")
-                        .unwrap(),
-                );
-
-                pb.set_message("Opening browser for GitHub authentication...");
-                pb.enable_steady_tick(Duration::from_millis(120));
-                thread::sleep(Duration::from_secs(2));
-                pb.set_message("Waiting for authorization...");
-                thread::sleep(Duration::from_secs(3));
-                pb.finish_with_message("✅ Successfully authenticated with GitHub!");
-                // TODO: Implement actual OAuth flow and save token
-            }
+            0 => AuthMethod::PersonalAccessToken,
+            1 => AuthMethod::OAuth,
             _ => unreachable!(),
         }
     }
 
-    // Save all configuration
-    config.set_user_profile(
-        github_username,
-        if user_name.trim().is_empty() {
-            None
-        } else {
-            Some(user_name)
-        },
-        if user_email.trim().is_empty() {
-            None
-        } else {
-            Some(user_email)
-        },
-    );
-
-    config.set_preferences(
-        default_private,
-        selected_license,
-        selected_gitignore,
-        selected_editor,
-    );
-
-    if let Err(e) = config.save() {
-        eprintln!("❌ Failed to save config: {}", e);
-        return;
+    /// Execute the chosen authentication method
+    fn execute_authentication(&mut self, method: AuthMethod) {
+        match method {
+            AuthMethod::PersonalAccessToken => self.handle_pat_authentication(),
+            AuthMethod::OAuth => self.handle_oauth_authentication(),
+        }
     }
 
-    println!("\n🎉 repogen is now fully configured and ready to use!");
-    println!("💡 Your preferences have been saved to ~/.config/repogen/config.toml");
-    println!("🚀 Try running: repogen new my-awesome-project");
+    /// Handle Personal Access Token authentication
+    fn handle_pat_authentication(&mut self) {
+        println!("\n📝 Using Personal Access Token authentication");
+
+        let token = Password::with_theme(&self.theme)
+            .with_prompt("Enter your GitHub Personal Access Token")
+            .validate_with(|input: &String| -> Result<(), &str> {
+                if input.starts_with("ghp_") && input.len() > 10 {
+                    Ok(())
+                } else {
+                    Err("Please enter a valid GitHub token (should start with 'ghp_')")
+                }
+            })
+            .interact()
+            .unwrap();
+
+        println!("✅ Token received and validated!");
+        self.config.set_github_token(token);
+    }
+
+    /// Handle OAuth authentication (simulated for now)
+    fn handle_oauth_authentication(&mut self) {
+        println!("\n🌐 Using OAuth browser authentication");
+
+        let pb = ProgressBar::new_spinner();
+        pb.set_style(
+            ProgressStyle::default_spinner()
+                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
+                .template("{spinner:.blue} {msg}")
+                .unwrap(),
+        );
+
+        pb.set_message("Opening browser for GitHub authentication...");
+        pb.enable_steady_tick(Duration::from_millis(120));
+        thread::sleep(Duration::from_secs(2));
+        pb.set_message("Waiting for authorization...");
+        thread::sleep(Duration::from_secs(3));
+        pb.finish_with_message("✅ Successfully authenticated with GitHub!");
+        // TODO: Implement actual OAuth flow and save token
+    }
+
+    /// Save all configuration to file
+    fn save_configuration(&mut self, profile: UserProfile, preferences: UserPreferences) {
+        self.config
+            .set_user_profile(profile.github_username, profile.full_name, profile.email);
+
+        self.config.set_preferences(
+            preferences.default_private,
+            preferences.license,
+            preferences.gitignore_template,
+            preferences.preferred_editor,
+        );
+
+        if let Err(e) = self.config.save() {
+            eprintln!("❌ Failed to save config: {}", e);
+            return;
+        }
+    }
+
+    /// Display completion message
+    fn display_completion_message(&self) {
+        println!("\n🎉 repogen is now fully configured and ready to use!");
+        println!("💡 Your preferences have been saved to ~/.config/repogen/config.toml");
+        println!("🚀 Try running: repogen new my-awesome-project");
+    }
+}
+
+/// Public function to handle initialization - entry point from main
+pub fn handle_init() {
+    InitHandler::handle_init();
 }

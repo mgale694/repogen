@@ -16,8 +16,9 @@ pub enum Commands {
 
     /// Create a new repository on GitHub
     New(New),
-    // View and edit configuration
-    // Config(Config),
+
+    /// View and edit configuration
+    Config(Config),
 }
 
 #[derive(Args)]
@@ -43,4 +44,19 @@ pub struct New {
     /// Make the repository private
     #[arg(short, long, default_value_t = false)]
     pub private: bool,
+}
+
+#[derive(Args)]
+pub struct Config {
+    /// View the current configuration
+    #[arg(short, long = "view", default_value_t = false)]
+    pub view: bool,
+
+    /// Edit the configuration interactively
+    #[arg(short, long = "edit", default_value_t = false)]
+    pub edit: bool,
+
+    /// Clear configuration to default values
+    #[arg(short, long = "clear", default_value_t = false)]
+    pub clear: bool,
 }
