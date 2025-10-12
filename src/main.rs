@@ -2,7 +2,7 @@ use clap::Parser;
 
 mod cli;
 mod commands;
-mod shared;
+mod utils;
 
 fn main() {
     let args = cli::Cli::parse();
@@ -10,7 +10,7 @@ fn main() {
     match args.command {
         cli::Commands::Init(init) => {
             // Display the cool title
-            shared::display_title();
+            utils::display_title();
 
             if init.authentication {
                 // Skip the profile and preferences setup
