@@ -1,40 +1,28 @@
 use clap::Parser;
-use std::io::{self, Write};
 
 mod cli;
-use cli::Cli;
+mod config;
+mod init;
+mod launch;
 
 fn main() {
-    let args = Cli::parse();
+    let args = cli::Cli::parse();
 
     match args.command {
-        cli::Commands::Init(_) => {
-            // TODO: Move this to a separate function/module in init.rs
-            println!("Welcome to repogen! 🚀");
-            println!("Let's set up your GitHub connection.\n");
+        cli::Commands::Init(init) => {
+            // Display the cool title
+            launch::display_title();
 
-            print!(
-                "Enter your GitHub Personal Access Token (or press Enter to open browser for login): "
-            );
-            io::stdout().flush().unwrap(); // Ensure the prompt is displayed immediately
-
-            let mut input = String::new();
-            match io::stdin().read_line(&mut input) {
-                Ok(_) => {
-                    let token = input.trim();
-                    if token.is_empty() {
-                        println!("Browser login not implemented yet. Please provide a token.");
-                    } else {
-                        println!(
-                            "Token received: {}***",
-                            &token[..std::cmp::min(8, token.len())]
-                        );
-                        // TODO: Save token securely and validate it
-                    }
-                }
-                Err(error) => {
-                    eprintln!("Error reading input: {}", error);
-                }
+            if init.authentication {
+                // Skip the profile and preferences setup
+                // init::handle_auth_only();
+                println!("Authentication only setup is not yet implemented.");
+            } else if init.metadata {
+                // Skip the authentication setup
+                // init::handle_meta_only();
+                println!("Metadata only setup is not yet implemented.");
+            } else {
+                init::handle_init();
             }
         }
         cli::Commands::New(new) => {

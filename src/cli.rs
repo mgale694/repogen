@@ -21,7 +21,15 @@ pub enum Commands {
 }
 
 #[derive(Args)]
-pub struct Init {}
+pub struct Init {
+    /// Argument to force only authentication setup
+    #[arg(short, long = "auth", default_value_t = false)]
+    pub authentication: bool,
+
+    /// Argument to force only meta data setup (profile, preferences)
+    #[arg(short, long = "meta", default_value_t = false)]
+    pub metadata: bool,
+}
 
 #[derive(Args)]
 pub struct New {
