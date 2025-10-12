@@ -49,10 +49,10 @@ Think of it as:
 
 ## 💻 Example Usage
 
-### 1️⃣ Login
+### 1️⃣ Init
 
 ```bash
-repogen login
+repogen init
 ```
 
 Prompts for a GitHub token and saves it securely in your local config.
@@ -85,7 +85,7 @@ Output:
 
 | Command              | Description                              |
 | -------------------- | ---------------------------------------- |
-| `repogen login`      | Authenticate and store GitHub token      |
+| `repogen init`       | Authenticate and store GitHub token      |
 | `repogen new <name>` | Create and clone a new GitHub repo       |
 | `repogen config`     | View or edit stored configuration        |
 | `repogen whoami`     | Display the connected GitHub user        |
@@ -145,7 +145,7 @@ For security, tokens are stored in plain text initially but can be encrypted via
 
 ## 🔮 Future Roadmap
 
-- [ ] OAuth device flow login
+- [ ] OAuth device flow init
 - [ ] Secure token storage using system keychain
 - [ ] Repo templates (e.g., Python, Node, Rust boilerplates)
 - [ ] Organization-level repo creation (`--org my-org`)
