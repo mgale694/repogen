@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::shared::config::Config;
 use dialoguer::{Confirm, Input, Password, Select, theme::ColorfulTheme};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::thread;

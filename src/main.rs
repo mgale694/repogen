@@ -1,9 +1,8 @@
 use clap::Parser;
 
 mod cli;
-mod config;
-mod init;
-mod launch;
+mod commands;
+mod shared;
 
 fn main() {
     let args = cli::Cli::parse();
@@ -11,18 +10,18 @@ fn main() {
     match args.command {
         cli::Commands::Init(init) => {
             // Display the cool title
-            launch::display_title();
+            shared::display_title();
 
             if init.authentication {
                 // Skip the profile and preferences setup
-                // init::handle_auth_only();
+                // commands::handle_auth_only();
                 println!("Authentication only setup is not yet implemented.");
             } else if init.metadata {
                 // Skip the authentication setup
-                // init::handle_meta_only();
+                // commands::handle_meta_only();
                 println!("Metadata only setup is not yet implemented.");
             } else {
-                init::handle_init();
+                commands::handle_init();
             }
         }
         cli::Commands::New(new) => {
