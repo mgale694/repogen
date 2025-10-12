@@ -131,15 +131,18 @@ For security, tokens are stored in plain text initially but can be encrypted via
 
 ## 🦀 Tech Stack
 
-| Tool                   | Purpose                              |
-| ---------------------- | ------------------------------------ |
-| **Rust**               | Core language — safe, fast, portable |
-| **clap**               | Command-line argument parsing        |
-| **reqwest**            | HTTP client for GitHub API           |
-| **serde / serde_json** | JSON parsing                         |
-| **dirs / toml**        | Config management                    |
-| **anyhow**             | Error handling                       |
-| **git2 (future)**      | Native Git operations                |
+| Tool                 | Purpose                              |
+| -------------------- | ------------------------------------ |
+| **Rust**             | Core language — safe, fast, portable |
+| **clap**             | Command-line argument parsing        |
+| **dialoguer**        | Interactive CLI prompts and forms    |
+| **indicatif**        | Progress bars and spinners           |
+| **console**          | Terminal styling and colors          |
+| **serde / toml**     | Configuration serialization          |
+| **dirs**             | Cross-platform config directories    |
+| **anyhow**           | Error handling and context           |
+| **reqwest (future)** | HTTP client for GitHub API           |
+| **git2 (future)**    | Native Git operations                |
 
 ---
 
@@ -186,8 +189,3 @@ If you’d like to help improve **repogen**, feel free to open an issue or submi
 
 Created by **Matthew Gale**
 For feedback or collaboration, reach out via GitHub or LinkedIn.
-
-```
-
----
-```
