@@ -178,6 +178,8 @@ Configuring your profile and repository preferences.
 ✔ Default license for new repositories · MIT
 ✔ Default .gitignore template · Python
 ✔ Preferred editor (for opening repos) · VS Code
+✔ Automatically clone repositories after creation? · yes
+✔ Clone directory (use '.' for current directory) · ~/projects
 
 ✅ Profile and preferences configured successfully!
 💡 Your settings have been saved to ~/.config/repogen/config.toml
@@ -309,7 +311,54 @@ repogen new quick-test --public
 2. **Applies defaults** unless overridden by CLI flags
 3. **Creates repository** on GitHub via API
 4. **Displays details** including clone URLs
-5. **Shows next steps** with your preferred editor
+5. **Auto-clones repository** (if enabled in config)
+6. **Shows next steps** with your preferred editor
+
+### Auto-Clone Feature
+
+If you've enabled auto-clone during init, repogen will automatically clone the repository after creation:
+
+```bash
+$ repogen new my-awesome-project
+
+📦 repogen - Create New Repository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Creating repository on GitHub...
+
+✅ Repository created successfully!
+
+📍 Repository Details:
+   Name: yourusername/my-awesome-project
+   URL: https://github.com/yourusername/my-awesome-project
+   Visibility: Private 🔒
+
+📥 Cloning repository...
+✅ Repository cloned to: /Users/you/projects/my-awesome-project
+
+💡 Navigate to your repository:
+   cd /Users/you/projects/my-awesome-project
+```
+
+**Configure auto-clone during init:**
+
+```bash
+✔ Automatically clone repositories after creation? · yes
+✔ Clone directory (use '.' for current directory) · ~/projects
+```
+
+**Or edit later:**
+
+```bash
+repogen config --edit
+# Select "Clone Settings (auto-clone, directory)"
+```
+
+**Behavior:**
+
+- If `auto_clone = true`: Repository is cloned to `clone_directory` or current directory
+- If `auto_clone = false`: Only creation details are shown, no cloning
+- If `clone_directory` is not set: Clones to current directory
 
 ### Override Priority
 
@@ -383,6 +432,10 @@ repogen config
   Default .gitignore: Python
   Preferred Editor: VS Code
 
+📁 Clone Settings
+  Auto-clone: Yes
+  Clone Directory: ~/projects
+
 📁 Configuration File
   Location: /Users/you/.config/repogen/config.toml
 
@@ -416,6 +469,7 @@ Select what you'd like to edit:
 
 > User Profile (username, name, email)
   Repository Defaults (privacy, license, gitignore, editor)
+  Clone Settings (auto-clone, directory)
   GitHub Authentication (token)
   Edit All
   Cancel
@@ -433,14 +487,19 @@ Select what you'd like to edit:
    - .gitignore template (Node, Python, Rust, Go, Java, C++, Swift, or None)
    - Editor (VS Code, Vim, Emacs, Sublime Text, Atom, IntelliJ, or None)
 
-3. **GitHub Authentication** - Secure token update
+3. **Clone Settings** - Configure auto-clone behavior
+
+   - Auto-clone: Enable/disable automatic cloning after repo creation
+   - Clone Directory: Set where repos should be cloned (defaults to current directory)
+
+4. **GitHub Authentication** - Secure token update
 
    - Recommends using `repogen init --auth` for security
    - Ensures proper validation and secure handling
 
-4. **Edit All** - Update profile and repository defaults in one go
+5. **Edit All** - Update profile, repository defaults, and clone settings in one go
 
-5. **Cancel** - Exit without making changes
+6. **Cancel** - Exit without making changes
 
 **Example Session:**
 
@@ -527,21 +586,25 @@ default_license = "MIT"
 default_gitignore = "Python"
 preferred_editor = "VS Code"
 oauth_client_id = "Iv1.abc123def456"
+auto_clone = true
+clone_directory = "~/projects"
 ```
 
 ### Configuration Fields
 
-| Field               | Type              | Description                                            |
-| ------------------- | ----------------- | ------------------------------------------------------ |
-| `github_token`      | String (optional) | Your GitHub Personal Access Token or OAuth token       |
-| `github_username`   | String (optional) | Your GitHub username                                   |
-| `user_name`         | String (optional) | Your full name for git commits                         |
-| `user_email`        | String (optional) | Your email for git commits                             |
-| `default_private`   | Boolean           | Create private repos by default                        |
-| `default_license`   | String (optional) | Default license (MIT, Apache-2.0, etc.)                |
-| `default_gitignore` | String (optional) | Default .gitignore template (Node, Python, Rust, etc.) |
-| `preferred_editor`  | String (optional) | Editor to open repos (VS Code, Vim, etc.)              |
-| `oauth_client_id`   | String (optional) | GitHub OAuth App Client ID for OAuth authentication    |
+| Field               | Type              | Description                                               |
+| ------------------- | ----------------- | --------------------------------------------------------- |
+| `github_token`      | String (optional) | Your GitHub Personal Access Token or OAuth token          |
+| `github_username`   | String (optional) | Your GitHub username                                      |
+| `user_name`         | String (optional) | Your full name for git commits                            |
+| `user_email`        | String (optional) | Your email for git commits                                |
+| `default_private`   | Boolean           | Create private repos by default                           |
+| `default_license`   | String (optional) | Default license (MIT, Apache-2.0, etc.)                   |
+| `default_gitignore` | String (optional) | Default .gitignore template (Node, Python, Rust, etc.)    |
+| `preferred_editor`  | String (optional) | Editor to open repos (VS Code, Vim, etc.)                 |
+| `oauth_client_id`   | String (optional) | GitHub OAuth App Client ID for OAuth authentication       |
+| `auto_clone`        | Boolean           | Automatically clone repos after creation (default: false) |
+| `clone_directory`   | String (optional) | Directory where repos are cloned (default: current dir)   |
 
 ### Manual Editing
 

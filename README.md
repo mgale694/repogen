@@ -44,8 +44,8 @@ Think of it as:
    repogen calls the [GitHub REST API](https://docs.github.com/en/rest/repos/repos#create-a-repository-for-the-authenticated-user)  
    to create a new repo for the authenticated user.
 
-3. **Clone Locally**  
-   Once created, repogen clones the repository to your current working directory.
+3. **Auto-Clone (Optional)**  
+   If enabled, repogen automatically clones the repository to your configured directory or current working directory.
 
 4. **Optional Post-Setup**
    - Add a `README.md`
@@ -82,7 +82,8 @@ repogen new my-app --public --license MIT --gitignore Node
 - ✅ Create repository on GitHub via API
 - ✅ Apply your defaults (or CLI overrides)
 - ✅ Set up license and .gitignore
-- ✅ Provide clone URLs and next steps
+- ✅ Automatically clone to your machine (if enabled)
+- ✅ Provide local path and next steps
 
 Output:
 
@@ -104,9 +105,11 @@ Output:
 📍 Repository Details:
    URL: https://github.com/username/my-cool-project
 
-🔗 Clone URLs:
-   HTTPS: https://github.com/username/my-cool-project.git
-   SSH:   git@github.com:username/my-cool-project.git
+� Cloning repository...
+✅ Repository cloned to: /Users/you/projects/my-cool-project
+
+💡 Navigate to your repository:
+   cd /Users/you/projects/my-cool-project
 ```
 
 ---

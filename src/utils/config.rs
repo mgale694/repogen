@@ -15,6 +15,9 @@ pub struct Config {
     pub default_gitignore: Option<String>,
     pub preferred_editor: Option<String>,
     pub oauth_client_id: Option<String>,
+    #[serde(default)]
+    pub auto_clone: bool,
+    pub clone_directory: Option<String>,
 }
 
 impl Config {
@@ -94,5 +97,11 @@ impl Config {
     /// Set OAuth client ID
     pub fn set_oauth_client_id(&mut self, client_id: String) {
         self.oauth_client_id = Some(client_id);
+    }
+
+    /// Set clone settings
+    pub fn set_clone_settings(&mut self, auto_clone: bool, clone_directory: Option<String>) {
+        self.auto_clone = auto_clone;
+        self.clone_directory = clone_directory;
     }
 }

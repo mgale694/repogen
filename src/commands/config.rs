@@ -69,6 +69,11 @@ impl ConfigHandler {
         self.print_field("Default .gitignore", &self.config.default_gitignore);
         self.print_field("Preferred Editor", &self.config.preferred_editor);
 
+        // Clone Settings Section
+        println!("\n{}", style("📁 Clone Settings").green().bold());
+        println!("  Auto-clone: {}", self.format_bool(self.config.auto_clone));
+        self.print_field("Clone Directory", &self.config.clone_directory);
+
         // Config File Location
         println!("\n{}", style("📁 Configuration File").green().bold());
         if let Ok(config_path) = Config::config_file() {
@@ -112,6 +117,7 @@ impl ConfigHandler {
         let options = vec![
             "User Profile (username, name, email)",
             "Repository Defaults (privacy, license, gitignore, editor)",
+            "Clone Settings (auto-clone, directory)",
             "GitHub Authentication (token)",
             "Edit All",
             "Cancel",
@@ -127,9 +133,10 @@ impl ConfigHandler {
         match selection {
             0 => self.edit_user_profile(),
             1 => self.edit_repository_defaults(),
-            2 => self.edit_authentication(),
-            3 => self.edit_all(),
-            4 => {
+            2 => self.edit_clone_settings(),
+            3 => self.edit_authentication(),
+            4 => self.edit_all(),
+            5 => {
                 println!("❌ Edit cancelled.");
                 return;
             }
@@ -269,6 +276,43 @@ impl ConfigHandler {
         );
     }
 
+    /// Edit clone settings
+    fn edit_clone_settings(&mut self) {
+        println!("\n{}", style("📁 Edit Clone Settings").green().bold());
+
+        let auto_clone = Confirm::with_theme(&self.theme)
+            .with_prompt("Automatically clone repositories after creation?")
+            .default(self.config.auto_clone)
+            .interact()
+            .unwrap();
+
+        let clone_directory = if auto_clone {
+            let default_dir = self
+                .config
+                .clone_directory
+                .as_ref()
+                .map(|s| s.as_str())
+                .unwrap_or(".");
+
+            let input: String = Input::with_theme(&self.theme)
+                .with_prompt("Clone directory (use '.' for current directory)")
+                .default(default_dir.to_string())
+                .interact_text()
+                .unwrap();
+
+            let trimmed = input.trim();
+            if trimmed.is_empty() || trimmed == "." {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
+        } else {
+            None
+        };
+
+        self.config.set_clone_settings(auto_clone, clone_directory);
+    }
+
     /// Edit GitHub authentication
     fn edit_authentication(&mut self) {
         println!(
@@ -299,6 +343,7 @@ impl ConfigHandler {
 
         self.edit_user_profile();
         self.edit_repository_defaults();
+        self.edit_clone_settings();
 
         println!(
             "\n💡 To update authentication, run: {}",

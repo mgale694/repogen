@@ -78,6 +78,11 @@ impl NewHandler {
         // Display success
         self.display_success(&response);
 
+        // Auto-clone if enabled
+        if self.config.auto_clone {
+            self.clone_repository(&response)?;
+        }
+
         Ok(())
     }
 
@@ -241,5 +246,58 @@ impl NewHandler {
                 _ => {}
             }
         }
+    }
+
+    /// Clone the repository to the configured directory
+    fn clone_repository(&self, response: &CreateRepoResponse) -> Result<()> {
+        use std::process::Command;
+        use std::env;
+        use std::path::PathBuf;
+
+        let cyan = Style::new().cyan().bold();
+        let green = Style::new().green().bold();
+
+        println!("\n{}", cyan.apply_to("📥 Cloning repository..."));
+
+        // Determine target directory
+        let target_dir = if let Some(ref dir) = self.config.clone_directory {
+            PathBuf::from(dir)
+        } else {
+            env::current_dir().context("Failed to get current directory")?
+        };
+
+        // Ensure target directory exists
+        if !target_dir.exists() {
+            std::fs::create_dir_all(&target_dir)
+                .context(format!("Failed to create directory: {:?}", target_dir))?;
+        }
+
+        // Run git clone
+        let output = Command::new("git")
+            .arg("clone")
+            .arg(&response.clone_url)
+            .current_dir(&target_dir)
+            .output()
+            .context("Failed to execute git clone. Is git installed?")?;
+
+        if !output.status.success() {
+            let error_msg = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow!("Git clone failed: {}", error_msg));
+        }
+
+        // Determine final repository path
+        let repo_path = target_dir.join(&response.name);
+        let repo_path_str = repo_path.display().to_string();
+
+        println!(
+            "{} Repository cloned to: {}",
+            green.apply_to("✅"),
+            cyan.apply_to(&repo_path_str)
+        );
+
+        println!("\n{}", cyan.apply_to("💡 Navigate to your repository:"));
+        println!("   cd {}", repo_path_str);
+
+        Ok(())
     }
 }

@@ -28,6 +28,8 @@ struct UserPreferences {
     license: Option<String>,
     gitignore_template: Option<String>,
     preferred_editor: Option<String>,
+    auto_clone: bool,
+    clone_directory: Option<String>,
 }
 
 /// Authentication method chosen by user
@@ -239,12 +241,20 @@ impl InitHandler {
         let license = self.select_license();
         let gitignore_template = self.select_gitignore_template();
         let preferred_editor = self.select_preferred_editor();
+        let auto_clone = self.ask_auto_clone();
+        let clone_directory = if auto_clone {
+            self.ask_clone_directory()
+        } else {
+            None
+        };
 
         UserPreferences {
             default_private,
             license,
             gitignore_template,
             preferred_editor,
+            auto_clone,
+            clone_directory,
         }
     }
 
@@ -332,6 +342,38 @@ impl InitHandler {
             None
         } else {
             Some(editor_options[selection].to_string())
+        }
+    }
+
+    /// Ask user if they want to automatically clone repositories after creation
+    fn ask_auto_clone(&self) -> bool {
+        Confirm::with_theme(&self.theme)
+            .with_prompt("Automatically clone repositories after creation?")
+            .default(self.config.auto_clone)
+            .interact()
+            .unwrap()
+    }
+
+    /// Ask user for the directory where repositories should be cloned
+    fn ask_clone_directory(&self) -> Option<String> {
+        let default_dir = self
+            .config
+            .clone_directory
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or(".");
+
+        let input: String = Input::with_theme(&self.theme)
+            .with_prompt("Clone directory (use '.' for current directory)")
+            .default(default_dir.to_string())
+            .interact_text()
+            .unwrap();
+
+        let trimmed = input.trim();
+        if trimmed.is_empty() || trimmed == "." {
+            None
+        } else {
+            Some(trimmed.to_string())
         }
     }
 
@@ -740,6 +782,9 @@ impl InitHandler {
             preferences.gitignore_template,
             preferences.preferred_editor,
         );
+
+        self.config
+            .set_clone_settings(preferences.auto_clone, preferences.clone_directory);
 
         if let Err(e) = self.config.save() {
             eprintln!("❌ Failed to save config: {}", e);
