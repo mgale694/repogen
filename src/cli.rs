@@ -41,9 +41,27 @@ pub struct New {
     #[arg(short, long = "desc")]
     pub description: Option<String>,
 
-    /// Make the repository private
-    #[arg(short, long, default_value_t = false)]
-    pub private: bool,
+    /// Make the repository private (overrides config default)
+    #[arg(short, long)]
+    pub private: Option<bool>,
+
+    /// Make the repository public (overrides config default)
+    #[arg(long)]
+    pub public: Option<bool>,
+
+    /// License to use (overrides config default)
+    /// Options: MIT, Apache-2.0, GPL-3.0, BSD-3-Clause, Unlicense, or None
+    #[arg(short, long)]
+    pub license: Option<String>,
+
+    /// .gitignore template to use (overrides config default)
+    /// Options: Node, Python, Rust, Go, Java, C++, Swift, or None
+    #[arg(short, long)]
+    pub gitignore: Option<String>,
+
+    /// Initialize with README
+    #[arg(long, default_value_t = true)]
+    pub readme: bool,
 }
 
 #[derive(Args)]

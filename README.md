@@ -70,21 +70,43 @@ repogen init --auth  # Add GitHub authentication
 ### 2️⃣ Create a New Repository
 
 ```bash
-repogen new my-cool-project --private --desc "My awesome project"
+# Use your configured defaults
+repogen new my-cool-project --desc "My awesome project"
+
+# Or override specific settings
+repogen new my-app --public --license MIT --gitignore Node
 ```
 
 **repogen** will:
 
-- Create a new private repository on GitHub
-- Clone it into `./my-cool-project`
-- Apply your default settings (license, .gitignore, etc.)
+- ✅ Create repository on GitHub via API
+- ✅ Apply your defaults (or CLI overrides)
+- ✅ Set up license and .gitignore
+- ✅ Provide clone URLs and next steps
 
 Output:
 
 ```
-📦 Creating new GitHub repo 'my-cool-project' ...
-📦 Cloning git@github.com:username/my-cool-project.git ...
-✅ Repo 'my-cool-project' ready at https://github.com/username/my-cool-project
+📦 repogen - Create New Repository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Repository Configuration:
+   Name: my-cool-project
+   Description: My awesome project
+   Visibility: Private 🔒
+   License: MIT
+   .gitignore: Python
+
+📦 Creating repository on GitHub...
+
+✅ Repository created successfully!
+
+📍 Repository Details:
+   URL: https://github.com/username/my-cool-project
+
+🔗 Clone URLs:
+   HTTPS: https://github.com/username/my-cool-project.git
+   SSH:   git@github.com:username/my-cool-project.git
 ```
 
 ---
@@ -96,7 +118,7 @@ Output:
 | `repogen init`          | Full setup: profile, preferences, and authentication   |
 | `repogen init --auth`   | Configure GitHub authentication only                   |
 | `repogen init --meta`   | Configure profile and preferences only                 |
-| `repogen new <name>`    | Create and clone a new GitHub repo                     |
+| `repogen new <name>`    | Create a new GitHub repo with defaults or overrides    |
 | `repogen config --view` | View current configuration                             |
 | `repogen config --edit` | Edit configuration interactively                       |
 | `repogen whoami`        | Display the connected GitHub user (coming soon)        |
@@ -223,11 +245,13 @@ See [docs/OAUTH_SETUP.md](docs/OAUTH_SETUP.md) for detailed OAuth information.
 - [x] OAuth device flow with interactive setup
 - [x] Token validation against GitHub API
 - [x] Client ID configuration and storage
-- [ ] Actual repository creation via GitHub API
+- [x] Repository creation via GitHub API
+- [x] Override defaults with CLI flags
+- [ ] Local git clone after creation
+- [ ] Automatic editor opening
 - [ ] Secure token storage using system keychain
 - [ ] Repo templates (e.g., Python, Node, Rust boilerplates)
 - [ ] Organization-level repo creation (`--org my-org`)
-- [ ] `.gitignore`, LICENSE, and CI setup options
 - [ ] Integration with GitHub Actions (auto-setup workflows)
 
 ---

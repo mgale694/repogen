@@ -4,7 +4,7 @@ mod cli;
 mod commands;
 mod utils;
 
-use commands::InitHandler;
+use commands::{InitHandler, NewHandler};
 
 fn main() {
     let args = cli::Cli::parse();
@@ -26,10 +26,24 @@ fn main() {
             }
         }
         cli::Commands::New(new) => {
-            println!(
-                "Creating new repository: name='{}', description='{:?}', private={}",
-                new.name, new.description, new.private
-            );
+            // Create new repository on GitHub
+            match NewHandler::new(new) {
+                Ok(mut handler) => {
+                    if let Err(e) = handler.create_repository() {
+                        eprintln!("\n❌ Error creating repository: {}", e);
+                        eprintln!("\n💡 Make sure you have:");
+                        eprintln!("   1. Authenticated with GitHub (run: repogen init --auth)");
+                        eprintln!("   2. A valid GitHub token with 'repo' scope");
+                        eprintln!("   3. Internet connection");
+                        std::process::exit(1);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("\n❌ Failed to initialize: {}", e);
+                    eprintln!("\n💡 Try running: repogen init");
+                    std::process::exit(1);
+                }
+            }
         }
         cli::Commands::Config(config) => {
             utils::display_title();

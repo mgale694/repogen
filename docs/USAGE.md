@@ -196,57 +196,153 @@ repogen init --help
 
 ## New Command
 
-Create a new GitHub repository and clone it locally.
+Create a new GitHub repository with your configured defaults or custom overrides.
 
 ### Basic Usage
 
 ```bash
-repogen new <repository-name>
+repogen new <repository-name> [OPTIONS]
 ```
 
 ### Options
 
-| Flag                   | Short | Description                 |
-| ---------------------- | ----- | --------------------------- |
-| `--desc <description>` | `-d`  | Repository description      |
-| `--private`            | `-p`  | Make the repository private |
+| Flag                     | Short | Description                                |
+| ------------------------ | ----- | ------------------------------------------ |
+| `--desc <description>`   | `-d`  | Repository description                     |
+| `--private`              | `-p`  | Make repository private (overrides config) |
+| `--public`               |       | Make repository public (overrides config)  |
+| `--license <license>`    | `-l`  | License template (overrides config)        |
+| `--gitignore <template>` | `-g`  | .gitignore template (overrides config)     |
+| `--readme`               |       | Initialize with README (default: true)     |
+
+### License Options
+
+- `MIT` - MIT License
+- `Apache-2.0` - Apache License 2.0
+- `GPL-3.0` - GNU General Public License v3.0
+- `BSD-3-Clause` - BSD 3-Clause License
+- `Unlicense` - The Unlicense
+- `None` - No license
+
+### .gitignore Templates
+
+- `Node` - Node.js
+- `Python` - Python
+- `Rust` - Rust
+- `Go` - Go
+- `Java` - Java
+- `C++` - C++
+- `Swift` - Swift
+- `None` - No .gitignore
 
 ### Examples
 
-**Create a public repository:**
+#### Using Config Defaults
 
 ```bash
-repogen new my-project
+$ repogen new my-project --desc "My awesome project"
+
+📦 repogen - Create New Repository
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 Repository Configuration:
+   Name: my-project
+   Description: My awesome project
+   Visibility: Private 🔒
+   License: MIT
+   .gitignore: Python
+   Initialize with README: Yes
+
+📦 Creating repository on GitHub...
+
+✅ Repository created successfully!
+
+📍 Repository Details:
+   Name: yourusername/my-project
+   URL: https://github.com/yourusername/my-project
+   Visibility: Private 🔒
+
+🔗 Clone URLs:
+   HTTPS: https://github.com/yourusername/my-project.git
+   SSH:   git@github.com:yourusername/my-project.git
+
+💡 Next Steps:
+   git clone https://github.com/yourusername/my-project.git
+   cd my-project
+   code .
 ```
 
-**Create a private repository with description:**
+#### Override Config with Public Repository
 
 ```bash
-repogen new my-app --private --desc "My awesome application"
+repogen new my-public-api --public --desc "Public REST API"
 ```
 
-**Using short flags:**
+#### Custom License and .gitignore
 
 ```bash
-repogen new my-api -p -d "REST API server"
+repogen new rust-project \
+  --desc "My Rust application" \
+  --license Apache-2.0 \
+  --gitignore Rust \
+  --private
 ```
 
-### What Happens
+#### No License or .gitignore
 
-1. Creates a new repository on GitHub
-2. Applies your default settings:
-   - Privacy (from config or `--private` flag)
-   - License (from your config)
-   - .gitignore template (from your config)
-3. Clones the repository to your current directory
-4. Optionally opens in your preferred editor
+```bash
+repogen new simple-repo \
+  --desc "Simple repository" \
+  --license None \
+  --gitignore None
+```
 
-**Expected Output:**
+#### Quick Public Repo
+
+```bash
+repogen new quick-test --public
+```
+
+### How It Works
+
+1. **Loads your configuration** from `~/.config/repogen/config.toml`
+2. **Applies defaults** unless overridden by CLI flags
+3. **Creates repository** on GitHub via API
+4. **Displays details** including clone URLs
+5. **Shows next steps** with your preferred editor
+
+### Override Priority
+
+Command-line flags take precedence over config defaults:
 
 ```
-📦 Creating new GitHub repo 'my-project' ...
-📦 Cloning git@github.com:username/my-project.git ...
-✅ Repo 'my-project' ready at https://github.com/username/my-project
+CLI Flag > Config Default > System Default
+```
+
+For example, if your config has `default_private = true`:
+
+- `repogen new test` → Creates **private** repo (uses config)
+- `repogen new test --public` → Creates **public** repo (flag overrides)
+
+### Error Handling
+
+If repository creation fails, you'll see helpful error messages:
+
+```bash
+❌ Error creating repository: GitHub API error (401): Bad credentials
+
+💡 Make sure you have:
+   1. Authenticated with GitHub (run: repogen init --auth)
+   2. A valid GitHub token with 'repo' scope
+   3. Internet connection
+```
+
+### Help
+
+View all new command options:
+
+```bash
+repogen new --help
 ```
 
 ---
