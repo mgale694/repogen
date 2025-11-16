@@ -32,10 +32,18 @@ fn main() {
             );
         }
         cli::Commands::Config(config) => {
-            println!(
-                "Config commands invoked: {:?}, {:?}, {:?}",
-                config.view, config.edit, config.clear
-            );
+            utils::display_title();
+
+            if config.view {
+                commands::handle_config_view();
+            } else if config.edit {
+                commands::handle_config_edit();
+            } else if config.clear {
+                commands::handle_config_clear();
+            } else {
+                // Default to view if no flag is provided
+                commands::handle_config_view();
+            }
         }
     }
 }

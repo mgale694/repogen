@@ -193,33 +193,161 @@ repogen new my-api -p -d "REST API server"
 
 ## Config Command
 
-View and manage your repogen configuration.
+View and manage your repogen configuration. The config command provides three powerful ways to manage your settings.
 
 ### View Configuration
 
+Display your current configuration in a beautifully formatted way.
+
 ```bash
+# View with explicit flag
 repogen config --view
+
+# Or use default behavior (no flag = view)
+repogen config
 ```
 
-Displays your current configuration settings.
+**What you'll see:**
+
+```
+📋 repogen Configuration
+══════════════════════════════════════════════════
+
+👤 User Profile
+  GitHub Username: yourusername
+  Full Name: Your Name
+  Email: your.email@example.com
+
+🔐 Authentication
+  GitHub Token: ghp_1234***
+
+⚙️  Repository Defaults
+  Private by default: No
+  Default License: MIT
+  Default .gitignore: Python
+  Preferred Editor: VS Code
+
+📁 Configuration File
+  Location: /Users/you/.config/repogen/config.toml
+
+══════════════════════════════════════════════════
+
+💡 Run repogen config --edit to modify configuration
+💡 Run repogen config --clear to reset configuration
+```
+
+**Features:**
+
+- ✅ Color-coded sections for easy reading
+- ✅ Masked token display (shows only first 8 characters)
+- ✅ Clear indication of unset values
+- ✅ Shows config file location
+- ✅ Helpful tips for next actions
 
 ### Edit Configuration
+
+Interactively modify your configuration settings without re-entering everything.
 
 ```bash
 repogen config --edit
 ```
 
-Opens an interactive editor to modify your settings.
+**Interactive Menu:**
+
+```
+✏️  Edit Configuration
+Select what you'd like to edit:
+
+> User Profile (username, name, email)
+  Repository Defaults (privacy, license, gitignore, editor)
+  GitHub Authentication (token)
+  Edit All
+  Cancel
+```
+
+**Edit Options:**
+
+1. **User Profile** - Update username, name, email
+   - Current values shown as defaults
+   - Just press Enter to keep existing values
+2. **Repository Defaults** - Update default settings
+
+   - Privacy (public/private repos by default)
+   - License (MIT, Apache-2.0, GPL-3.0, BSD-3-Clause, Unlicense, or None)
+   - .gitignore template (Node, Python, Rust, Go, Java, C++, Swift, or None)
+   - Editor (VS Code, Vim, Emacs, Sublime Text, Atom, IntelliJ, or None)
+
+3. **GitHub Authentication** - Secure token update
+
+   - Recommends using `repogen init --auth` for security
+   - Ensures proper validation and secure handling
+
+4. **Edit All** - Update profile and repository defaults in one go
+
+5. **Cancel** - Exit without making changes
+
+**Example Session:**
+
+```bash
+$ repogen config --edit
+✔ What would you like to edit? · Repository Defaults
+
+⚙️  Edit Repository Defaults
+✔ Make repositories private by default? · yes
+✔ Default license · MIT
+✔ Default .gitignore template · Python
+✔ Preferred editor · VS Code
+
+✅ Configuration updated successfully!
+💡 Run repogen config --view to view your updated config
+```
+
+**Benefits:**
+
+- ✅ Selective editing - only update what you need
+- ✅ Current values shown as defaults - no retyping
+- ✅ Secure token handling - redirects to proper auth flow
+- ✅ Auto-saves after editing
+- ✅ Helpful suggestions for next steps
 
 ### Clear Configuration
+
+Reset your configuration to defaults. This completely removes your config file.
 
 ```bash
 repogen config --clear
 ```
 
-Resets configuration to default values.
+**Safety Features:**
+
+```
+🗑️  Clear Configuration
+This will reset all configuration to default values.
+⚠️  This action cannot be undone!
+
+? Are you sure you want to clear all configuration? (y/N)
+
+? Really clear? This will delete your GitHub token and all settings! (y/N)
+```
+
+**Features:**
+
+- ✅ Double confirmation required
+- ✅ Clear warning messages
+- ✅ Deletes config file completely
+- ✅ Helpful message after clearing
+- ✅ Safe cancellation at any point
+
+**After clearing:**
+
+```
+✅ Configuration cleared successfully!
+💡 Run repogen init to set up again
+```
 
 ### Help
+
+View all config command options:
 
 ```bash
 repogen config --help
