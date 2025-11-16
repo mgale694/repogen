@@ -57,27 +57,87 @@ repogen init --auth
 
 1. Checks for existing token (offers to keep it)
 2. Prompts for authentication method:
-   - GitHub Personal Access Token (PAT)
-   - OAuth Login (Browser) - _coming soon_
+   - **OAuth Login (Browser)** - Recommended
+   - **GitHub Personal Access Token (PAT)** - Quick alternative
 3. Validates and saves the token
 4. Suggests running `--meta` if profile is incomplete
+
+#### OAuth Authentication (Recommended)
+
+OAuth provides browser-based authentication with one-time setup:
+
+**First Time Setup:**
+
+```bash
+$ repogen init --auth
+
+✔ How would you like to authenticate with GitHub? › OAuth Login (Browser) - Recommended
+
+🌐 OAuth Browser Authentication
+
+� OAuth Setup Required
+This is a one-time setup that takes about 2 minutes.
+
+✔ Would you like to set up OAuth now? › yes
+
+📝 OAuth App Setup Guide
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Create a GitHub OAuth App
+   → Open: https://github.com/settings/developers
+✅ Browser opened automatically
+
+Step 2: Click 'New OAuth App'
+
+Step 3: Fill in the application details:
+   • Application name: repogen
+   • Homepage URL: https://github.com/yourusername/repogen
+   • Authorization callback URL: http://127.0.0.1
+   • Description: CLI tool for GitHub repository creation
+
+Step 4: After creating the app:
+   • Check the box: ☑️  Enable Device Flow
+   • Copy the Client ID (starts with 'Iv1.')
+
+✔ GitHub OAuth App Client ID › Iv1.abc123def456
+
+✅ Client ID saved to config!
+🎉 OAuth setup complete! Now let's authenticate...
+
+📝 Requesting device code from GitHub...
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  Please visit: https://github.com/login/device  ┃
+┃  And enter code: WDJB-MJHT           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+✅ Authorization successful!
+✅ GitHub authentication configured successfully!
+```
+
+**Returning Users:** After setup, OAuth is seamless - just approve in browser!
+
+💡 See [OAUTH_SETUP.md](OAUTH_SETUP.md) for detailed information.
+
+#### Personal Access Token (Quick Alternative)
 
 **Example:**
 
 ```bash
 $ repogen init --auth
-🔐 repogen - Authentication Setup
-Configuring GitHub authentication only.
 
-✔ How would you like to authenticate with GitHub? · GitHub Personal Access Token (PAT)
+✔ How would you like to authenticate with GitHub? › GitHub Personal Access Token (PAT)
 
 📝 Using Personal Access Token authentication
+💡 Create a token at: https://github.com/settings/tokens/new
+   Required scopes: repo, user
+
 ✔ Enter your GitHub Personal Access Token · ********
-✅ Token received and validated!
+🔍 Validating token with GitHub... ✅ Success!
+👤 Authenticated as: yourusername
 
 ✅ GitHub authentication configured successfully!
 💡 Your token has been saved to ~/.config/repogen/config.toml
-🚀 Run `repogen init --meta` to complete your profile setup.
 ```
 
 ### Profile & Preferences Only
@@ -370,13 +430,14 @@ default_private = false
 default_license = "MIT"
 default_gitignore = "Python"
 preferred_editor = "VS Code"
+oauth_client_id = "Iv1.abc123def456"
 ```
 
 ### Configuration Fields
 
 | Field               | Type              | Description                                            |
 | ------------------- | ----------------- | ------------------------------------------------------ |
-| `github_token`      | String (optional) | Your GitHub Personal Access Token                      |
+| `github_token`      | String (optional) | Your GitHub Personal Access Token or OAuth token       |
 | `github_username`   | String (optional) | Your GitHub username                                   |
 | `user_name`         | String (optional) | Your full name for git commits                         |
 | `user_email`        | String (optional) | Your email for git commits                             |
@@ -384,6 +445,7 @@ preferred_editor = "VS Code"
 | `default_license`   | String (optional) | Default license (MIT, Apache-2.0, etc.)                |
 | `default_gitignore` | String (optional) | Default .gitignore template (Node, Python, Rust, etc.) |
 | `preferred_editor`  | String (optional) | Editor to open repos (VS Code, Vim, etc.)              |
+| `oauth_client_id`   | String (optional) | GitHub OAuth App Client ID for OAuth authentication    |
 
 ### Manual Editing
 

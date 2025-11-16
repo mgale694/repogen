@@ -1,7 +1,14 @@
 # 🧰 repogen
 
 **repogen** is a Rust-based command-line tool that automates the creation of new GitHub repositories — both remotely and locally.  
-Instead of manually creating a repository on GitHub and then linking it with `git init`, `repogen` handles everything in one go.
+OAuth provides the **best user experience** with fully interactive setup:
+
+1. Run `repogen init` or `repogen init --auth`
+2. Select **"OAuth Login (Browser)"** (default option)
+3. Follow the interactive guide to create a GitHub OAuth App (~2 minutes, one-time)
+4. Enter your OAuth App's Client ID when prompted
+5. Authenticate via browser
+6. Done! Future authentications just need browser approvalof manually creating a repository on GitHub and then linking it with `git init`, `repogen` handles everything in one go.
 
 ---
 
@@ -135,10 +142,49 @@ For security, tokens are stored in plain text initially but can be encrypted via
 
 ## 🔐 Authentication Options
 
-| Method                          | Description                                                               |
-| ------------------------------- | ------------------------------------------------------------------------- |
-| **Personal Access Token (PAT)** | Easiest method — user generates it on GitHub and provides it once         |
-| **OAuth Device Flow**           | Future option — user logs in via browser, token is returned automatically |
+| Method                          | Description                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| **OAuth Device Flow** 🌟        | ✅ **Recommended** — Fully interactive setup with guided OAuth app creation |
+| **Personal Access Token (PAT)** | ✅ **Active** — Quick alternative, validated against API automatically      |
+
+### OAuth Device Flow (Recommended) 🌟
+
+OAuth provides the **best user experience** with fully interactive setup:
+
+OAuth provides the best user experience with **fully interactive setup**:
+
+1. Run `repogen init --auth`
+2. Select "OAuth Login (Browser)"
+3. Follow the interactive guide to create a GitHub OAuth App (~2 minutes, one-time)
+4. Enter your OAuth App's Client ID
+5. Authenticate via browser
+6. Done! Future authentications use your saved Client ID
+
+**Why OAuth?**
+
+- ✅ Browser-based authentication (no copy-pasting tokens)
+- ✅ Guided setup process (no manual code editing)
+- ✅ Client ID saved to config (reusable forever)
+- ✅ Best for teams and organizations
+- ✅ More secure token management
+
+### Personal Access Token (Quick Alternative)
+
+PAT is the fastest option for personal use:
+
+1. Run `repogen init --auth`
+2. Select **"Personal Access Token"**
+3. Create token at https://github.com/settings/tokens/new (`repo`, `user` scopes)
+4. Paste when prompted
+5. Automatically validated ✅
+
+**When to use PAT:**
+
+- 💨 Quickest setup (30 seconds)
+- 👤 Personal projects
+- 🔧 Testing or development
+
+See [docs/OAUTH_SETUP.md](docs/OAUTH_SETUP.md) for detailed OAuth information.
 
 ---
 
@@ -156,24 +202,28 @@ For security, tokens are stored in plain text initially but can be encrypted via
 
 ## 🦀 Tech Stack
 
-| Tool                 | Purpose                              |
-| -------------------- | ------------------------------------ |
-| **Rust**             | Core language — safe, fast, portable |
-| **clap**             | Command-line argument parsing        |
-| **dialoguer**        | Interactive CLI prompts and forms    |
-| **indicatif**        | Progress bars and spinners           |
-| **console**          | Terminal styling and colors          |
-| **serde / toml**     | Configuration serialization          |
-| **dirs**             | Cross-platform config directories    |
-| **anyhow**           | Error handling and context           |
-| **reqwest (future)** | HTTP client for GitHub API           |
-| **git2 (future)**    | Native Git operations                |
+| Tool              | Purpose                              |
+| ----------------- | ------------------------------------ |
+| **Rust**          | Core language — safe, fast, portable |
+| **clap**          | Command-line argument parsing        |
+| **dialoguer**     | Interactive CLI prompts and forms    |
+| **indicatif**     | Progress bars and spinners           |
+| **console**       | Terminal styling and colors          |
+| **serde / toml**  | Configuration serialization          |
+| **dirs**          | Cross-platform config directories    |
+| **anyhow**        | Error handling and context           |
+| **reqwest**       | HTTP client for GitHub API & OAuth   |
+| **webbrowser**    | Opening browser for OAuth flow       |
+| **git2 (future)** | Native Git operations                |
 
 ---
 
 ## 🔮 Future Roadmap
 
-- [ ] OAuth device flow init
+- [x] OAuth device flow with interactive setup
+- [x] Token validation against GitHub API
+- [x] Client ID configuration and storage
+- [ ] Actual repository creation via GitHub API
 - [ ] Secure token storage using system keychain
 - [ ] Repo templates (e.g., Python, Node, Rust boilerplates)
 - [ ] Organization-level repo creation (`--org my-org`)

@@ -14,6 +14,7 @@ pub struct Config {
     pub default_license: Option<String>,
     pub default_gitignore: Option<String>,
     pub preferred_editor: Option<String>,
+    pub oauth_client_id: Option<String>,
 }
 
 impl Config {
@@ -88,5 +89,10 @@ impl Config {
         self.default_license = license;
         self.default_gitignore = gitignore;
         self.preferred_editor = editor;
+    }
+
+    /// Set OAuth client ID
+    pub fn set_oauth_client_id(&mut self, client_id: String) {
+        self.oauth_client_id = Some(client_id);
     }
 }
