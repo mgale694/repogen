@@ -54,6 +54,18 @@ impl InitHandler {
         handler.run_init_workflow();
     }
 
+    /// Authentication-only entry point for `repogen init --auth`
+    pub fn handle_auth_only() {
+        let mut handler = Self::new();
+        handler.run_auth_only_workflow();
+    }
+
+    /// Metadata-only entry point for `repogen init --meta`
+    pub fn handle_meta_only() {
+        let mut handler = Self::new();
+        handler.run_meta_only_workflow();
+    }
+
     /// Run the complete initialization workflow
     fn run_init_workflow(&mut self) {
         self.display_welcome();
@@ -67,6 +79,51 @@ impl InitHandler {
         // Save all configuration
         self.save_configuration(user_profile, preferences);
         self.display_completion_message();
+    }
+
+    /// Run authentication-only workflow
+    fn run_auth_only_workflow(&mut self) {
+        println!("🔐 repogen - Authentication Setup");
+        println!("Configuring GitHub authentication only.\n");
+
+        // Only handle authentication
+        self.handle_authentication();
+
+        // Save only the authentication token
+        if let Err(e) = self.config.save() {
+            eprintln!("❌ Failed to save config: {}", e);
+            return;
+        }
+
+        println!("\n✅ GitHub authentication configured successfully!");
+        println!("💡 Your token has been saved to ~/.config/repogen/config.toml");
+        println!("🚀 Run `repogen init --meta` to complete your profile setup.");
+    }
+
+    /// Run metadata-only workflow (profile and preferences)
+    fn run_meta_only_workflow(&mut self) {
+        println!("👤 repogen - Profile & Preferences Setup");
+        println!("Configuring your profile and repository preferences.\n");
+
+        self.show_existing_config_notice();
+
+        // Collect user information
+        let user_profile = self.collect_user_profile();
+        let preferences = self.collect_user_preferences();
+
+        // Save configuration
+        self.save_configuration(user_profile, preferences);
+
+        println!("\n✅ Profile and preferences configured successfully!");
+        println!("💡 Your settings have been saved to ~/.config/repogen/config.toml");
+
+        // Check if they still need to set up auth
+        if self.config.github_token.is_none() {
+            println!("⚠️  You still need to configure GitHub authentication.");
+            println!("🚀 Run `repogen init --auth` to set up your GitHub token.");
+        } else {
+            println!("🎉 repogen is fully configured and ready to use!");
+        }
     }
 
     /// Display welcome message

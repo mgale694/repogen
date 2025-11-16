@@ -15,14 +15,13 @@ fn main() {
             utils::display_title();
 
             if init.authentication {
-                // Skip the profile and preferences setup
-                // commands::handle_auth_only();
-                println!("Authentication only setup is not yet implemented.");
+                // Authentication-only setup
+                InitHandler::handle_auth_only();
             } else if init.metadata {
-                // Skip the authentication setup
-                // commands::handle_meta_only();
-                println!("Metadata only setup is not yet implemented.");
+                // Metadata-only setup (profile and preferences)
+                InitHandler::handle_meta_only();
             } else {
+                // Full initialization workflow
                 InitHandler::handle_init();
             }
         }

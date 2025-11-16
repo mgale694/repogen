@@ -47,29 +47,30 @@ Think of it as:
 
 ---
 
-## 💻 Example Usage
+## 💻 Quick Start
 
-### 1️⃣ Init
+### 1️⃣ Initialize repogen
 
 ```bash
+# Full setup (recommended for first time)
 repogen init
+
+# Or configure in steps
+repogen init --meta  # Set up profile & preferences
+repogen init --auth  # Add GitHub authentication
 ```
-
-Prompts for a GitHub token and saves it securely in your local config.
-
----
 
 ### 2️⃣ Create a New Repository
 
 ```bash
-repogen new my-cool-project --private --desc "Testing my Rust CLI"
+repogen new my-cool-project --private --desc "My awesome project"
 ```
 
 **repogen** will:
 
 - Create a new private repository on GitHub
 - Clone it into `./my-cool-project`
-- Optionally initialize a README and push the first commit
+- Apply your default settings (license, .gitignore, etc.)
 
 Output:
 
@@ -83,13 +84,27 @@ Output:
 
 ## 🧭 Command Overview
 
-| Command              | Description                              |
-| -------------------- | ---------------------------------------- |
-| `repogen init`       | Authenticate and store GitHub token      |
-| `repogen new <name>` | Create and clone a new GitHub repo       |
-| `repogen config`     | View or edit stored configuration        |
-| `repogen whoami`     | Display the connected GitHub user        |
-| `repogen link`       | Link an existing folder to a GitHub repo |
+| Command                 | Description                                            |
+| ----------------------- | ------------------------------------------------------ |
+| `repogen init`          | Full setup: profile, preferences, and authentication   |
+| `repogen init --auth`   | Configure GitHub authentication only                   |
+| `repogen init --meta`   | Configure profile and preferences only                 |
+| `repogen new <name>`    | Create and clone a new GitHub repo                     |
+| `repogen config --view` | View current configuration                             |
+| `repogen config --edit` | Edit configuration interactively                       |
+| `repogen whoami`        | Display the connected GitHub user (coming soon)        |
+| `repogen link`          | Link an existing folder to a GitHub repo (coming soon) |
+
+> 📚 For detailed usage of each command, see the [USAGE.md](docs/USAGE.md) documentation.
+
+---
+
+## 📖 Documentation
+
+For detailed usage instructions, examples, and workflows:
+
+- **[Usage Guide](docs/USAGE.md)** - Complete command reference and examples
+- **[Docs Index](docs/)** - All documentation in one place
 
 ---
 
@@ -98,11 +113,21 @@ Output:
 **repogen** stores its config and authentication token in:
 
 ```
-~/.config/repogen/
+~/.config/repogen/config.toml
 ```
 
-- `token` — your GitHub access token
-- `config.toml` — optional user settings (future features)
+Example configuration:
+
+```toml
+github_token = "ghp_..."
+github_username = "yourusername"
+user_name = "Your Name"
+user_email = "your.email@example.com"
+default_private = false
+default_license = "MIT"
+default_gitignore = "Python"
+preferred_editor = "VS Code"
+```
 
 For security, tokens are stored in plain text initially but can be encrypted via the system keyring in later versions.
 
